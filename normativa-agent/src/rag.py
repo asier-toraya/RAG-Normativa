@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import chromadb
+from chromadb.api.models.Collection import Collection
 from ollama import Client, ResponseError
 
 from .config import Settings
@@ -23,14 +24,22 @@ class NormativaRAG:
         self.settings = settings
         self.ollama_client = Client(host=settings.ollama_host)
         self.chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
+        self._collection: Collection | None = None
 
-    def _get_collection(self):
+    def _get_collection(self) -> Collection:
+        if self._collection is not None:
+            return self._collection
+
         try:
-            return self.chroma_client.get_collection(name=self.settings.chroma_collection)
+            self._collection = self.chroma_client.get_collection(
+                name=self.settings.chroma_collection
+            )
         except Exception as exc:
             raise RuntimeError(
                 "La base vectorial no está inicializada. Ejecuta primero `python -m src.ingest`."
             ) from exc
+
+        return self._collection
 
     def _embed_query(self, question: str) -> list[float]:
         try:
@@ -49,16 +58,11 @@ class NormativaRAG:
 
     def retrieve(self, question: str) -> RetrievalResult:
         collection = self._get_collection()
-        if collection.count() == 0:
-            raise RuntimeError(
-                "La base vectorial está vacía. Ejecuta `python -m src.ingest` antes de consultar."
-            )
-
         query_embedding = self._embed_query(question)
         result = collection.query(
             query_embeddings=[query_embedding],
             n_results=self.settings.top_k,
-            include=["documents", "metadatas", "distances"],
+            include=["documents", "metadatas"],
         )
 
         documents = (result.get("documents") or [[]])[0]
@@ -76,9 +80,7 @@ class NormativaRAG:
             chunk_index = metadata.get("chunk_index", "?")
             if source not in sources:
                 sources.append(source)
-            context_parts.append(
-                f"[Fuente: {source} | chunk: {chunk_index}]\n{document}"
-            )
+            context_parts.append(f"[Fuente: {source} | chunk: {chunk_index}]\n{document}")
 
         return RetrievalResult(
             context="\n\n".join(context_parts),
@@ -137,4 +139,3 @@ class NormativaRAG:
             content = f"{content}\n\nFuentes consultadas\n{sources_block}"
 
         return content
-

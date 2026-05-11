@@ -77,13 +77,15 @@ class OrchestratorAgent:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.normativa_agent = NormativaAgent(rag=NormativaRAG(settings))
-        self.corrector_agent = CorrectorAgent(settings)
+        self.corrector_agent = CorrectorAgent(settings) if settings.enable_corrector else None
 
     def run(self, question: str) -> str:
         print("[orchestrator] Ejecutando subagente de normativa...")
         normative_answer = self.normativa_agent.run(question)
 
+        if self.corrector_agent is None:
+            return normative_answer
+
         print("[orchestrator] Ejecutando subagente corrector...")
         final_answer = self.corrector_agent.run(normative_answer)
         return final_answer
-

@@ -4,13 +4,18 @@ Sistema multiagente local en Python para consultas sobre normativa de cibersegur
 
 ## Descripción
 
-El proyecto implementa un patrón multiagente sencillo y defendible en una presentación académica:
+El proyecto implementa un patrón multiagente sencillo y defendible:
 
 - Un agente orquestador recibe la consulta.
 - Un subagente de normativa recupera fragmentos relevantes desde una base vectorial local y redacta una respuesta limitada al contenido recuperado.
-- Un subagente corrector mejora ortografía, claridad y formato sin alterar el significado técnico ni la sección de fuentes.
+- Un subagente corrector opcional mejora ortografía, claridad y formato sin alterar el significado técnico ni la sección de fuentes.
 
 Todo el flujo funciona en local y evita frameworks multiagente complejos.
+
+La documentación adicional está en:
+
+- [Documentacion/mejoras-eficiencia.md](Documentacion/mejoras-eficiencia.md)
+- [Documentacion/uso-y-operacion.md](Documentacion/uso-y-operacion.md)
 
 ## Arquitectura de agentes
 
@@ -25,7 +30,7 @@ Agente orquestador
   │     ├─► Recuperación Top-K en ChromaDB
   │     └─► Respuesta con modelo de chat
   │
-  └─► Subagente corrector
+  └─► Subagente corrector opcional
         └─► Mejora de redacción sin cambiar el contenido técnico
 ```
 
@@ -33,6 +38,9 @@ Agente orquestador
 
 ```text
 normativa-agent/
+├── Documentacion/
+│   ├── mejoras-eficiencia.md
+│   └── uso-y-operacion.md
 ├── normativa/
 │   └── ejemplo.md
 ├── src/
@@ -115,13 +123,21 @@ Variables principales en `.env`:
 - `CHAT_MODEL=qwen3:8b`
 - `ALT_CHAT_MODEL=llama3.1:8b`
 - `EMBED_MODEL=nomic-embed-text`
+- `ENABLE_CORRECTOR=false`
 - `OLLAMA_HOST=http://localhost:11434`
+- `OLLAMA_MODELS=./ollama-models`
 - `CHROMA_PATH=./db`
 - `NORMATIVA_PATH=./normativa`
 - `TOP_K=5`
 - `CHUNK_SIZE=1200`
 - `CHUNK_OVERLAP=150`
+- `EMBED_BATCH_SIZE=32`
 - `CHROMA_COLLECTION=normativa`
+
+Notas:
+
+- `ENABLE_CORRECTOR=false` reduce latencia porque evita una segunda llamada al modelo de chat.
+- `EMBED_BATCH_SIZE` controla cuántos fragmentos se procesan por lote durante la ingesta.
 
 ## Indexación de documentos
 
@@ -133,11 +149,13 @@ python -m src.ingest
 
 La ingesta:
 
-- Lee todos los `.md`
-- Normaliza Markdown básico
-- Divide en fragmentos
-- Genera embeddings con `nomic-embed-text`
-- Guarda textos y metadatos en ChromaDB
+- Lee todos los `.md`.
+- Normaliza Markdown básico.
+- Divide el contenido en fragmentos.
+- Genera embeddings con `nomic-embed-text` por lotes.
+- Actualiza solo los archivos nuevos o modificados.
+- Elimina de ChromaDB los fragmentos de archivos que ya no existen.
+- Guarda textos y metadatos en ChromaDB mediante sincronización incremental.
 
 ## Ejecución
 
@@ -159,7 +177,9 @@ Comandos de salida:
 - `exit`
 - `quit`
 
-## Ejemplos de uso
+Si ya había una terminal abierta con una versión anterior del proceso, reiníciala para que cargue la configuración y el código actualizados.
+
+## Ejemplo de uso
 
 Consulta:
 
@@ -169,8 +189,8 @@ Consulta normativa > ¿Qué exige la normativa interna sobre la notificación de
 
 Respuesta esperada:
 
-- Síntesis basada únicamente en fragmentos recuperados
-- Sección final `Fuentes consultadas`
+- Síntesis basada únicamente en fragmentos recuperados.
+- Sección final `Fuentes consultadas`.
 
 Si el corpus no contiene evidencia suficiente, el sistema responderá exactamente:
 
@@ -193,7 +213,7 @@ python -m src.ingest
 python -m src.main
 ```
 
-## Comandos esperados
+## Comandos habituales
 
 ```bash
 pip install -r requirements.txt
@@ -209,4 +229,3 @@ python -m src.main
 - El patrón multiagente está implementado manualmente con clases ligeras.
 - El modelo principal puede cambiarse desde `.env`.
 - La base vectorial es completamente local.
-
