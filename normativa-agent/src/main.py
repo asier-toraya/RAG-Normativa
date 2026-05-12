@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from .agents import OrchestratorAgent
 from .config import get_settings
 
@@ -7,7 +9,19 @@ from .config import get_settings
 EXIT_COMMANDS = {"salir", "exit", "quit"}
 
 
+def configure_stdio() -> None:
+    for stream_name in ("stdin", "stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is None or not hasattr(stream, "reconfigure"):
+            continue
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            continue
+
+
 def main() -> None:
+    configure_stdio()
     settings = get_settings()
     orchestrator = OrchestratorAgent(settings)
 

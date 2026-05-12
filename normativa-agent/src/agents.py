@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from ollama import Client, ResponseError
 
 from .config import Settings
-from .rag import NO_INFO_RESPONSE, NormativaRAG
+from .rag import NO_INFO_RESPONSE, NormativaRAG, format_ollama_exception
+from .skills import load_skill
 
 
 @dataclass(slots=True)
@@ -13,6 +14,9 @@ class NormativaAgent:
     rag: NormativaRAG
 
     def run(self, question: str) -> str:
+        load_skill("normativa")
+        load_skill("evidencia")
+        load_skill("citas")
         retrieval = self.rag.retrieve(question)
         return self.rag.answer_with_context(question, retrieval)
 
@@ -35,6 +39,7 @@ class CorrectorAgent:
         if answer.strip() == NO_INFO_RESPONSE:
             return NO_INFO_RESPONSE
 
+        corrector_skill = load_skill("corrector")
         body, sources = self._split_sources(answer)
         if not body:
             return answer.strip()
@@ -42,11 +47,7 @@ class CorrectorAgent:
         messages = [
             {
                 "role": "system",
-                "content": (
-                    "Eres un subagente corrector. Mejora ortografía, gramática, claridad "
-                    "y formato del texto recibido. No cambies el significado técnico, no "
-                    "añadas información nueva y devuelve solo el texto corregido."
-                ),
+                "content": f"{corrector_skill}\n\nDevuelve solo el texto corregido.",
             },
             {
                 "role": "user",
@@ -63,9 +64,7 @@ class CorrectorAgent:
         except ResponseError as exc:
             raise RuntimeError(f"Error de Ollama al corregir la respuesta: {exc.error}") from exc
         except Exception as exc:
-            raise RuntimeError(
-                "No ha sido posible conectar con Ollama. Verifica que el servicio esté activo."
-            ) from exc
+            raise RuntimeError(format_ollama_exception(exc)) from exc
 
         corrected_body = response["message"]["content"].strip() or body
         if not sources:
@@ -80,6 +79,7 @@ class OrchestratorAgent:
         self.corrector_agent = CorrectorAgent(settings) if settings.enable_corrector else None
 
     def run(self, question: str) -> str:
+        load_skill("orchestrator")
         print("[orchestrator] Ejecutando subagente de normativa...")
         normative_answer = self.normativa_agent.run(question)
 

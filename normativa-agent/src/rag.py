@@ -4,9 +4,11 @@ from dataclasses import dataclass
 
 import chromadb
 from chromadb.api.models.Collection import Collection
+from chromadb.config import Settings as ChromaSettings
 from ollama import Client, ResponseError
 
 from .config import Settings
+from .skills import compose_skills
 
 
 NO_INFO_RESPONSE = "No encuentro información suficiente en la normativa cargada."
@@ -19,12 +21,28 @@ class RetrievalResult:
     chunks: list[str]
 
 
+def format_ollama_exception(exc: Exception) -> str:
+    details = str(exc).strip() or "sin detalle adicional"
+    return (
+        "No ha sido posible completar la llamada a Ollama. "
+        f"Causa real: {type(exc).__name__}: {details}"
+    )
+
+
 class NormativaRAG:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.ollama_client = Client(host=settings.ollama_host)
-        self.chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
+        self.chroma_client = chromadb.PersistentClient(
+            path=str(settings.chroma_path),
+            settings=ChromaSettings(
+                anonymized_telemetry=False,
+                chroma_product_telemetry_impl="src.chroma_telemetry.NullProductTelemetryClient",
+                chroma_telemetry_impl="src.chroma_telemetry.NullProductTelemetryClient",
+            ),
+        )
         self._collection: Collection | None = None
+        self._collection_size: int | None = None
 
     def _get_collection(self) -> Collection:
         if self._collection is not None:
@@ -41,15 +59,20 @@ class NormativaRAG:
 
         return self._collection
 
+    def _get_collection_size(self) -> int:
+        if self._collection_size is not None:
+            return self._collection_size
+
+        self._collection_size = self._get_collection().count()
+        return self._collection_size
+
     def _embed_query(self, question: str) -> list[float]:
         try:
             response = self.ollama_client.embed(model=self.settings.embed_model, input=question)
         except ResponseError as exc:
             raise RuntimeError(f"Error de Ollama al generar el embedding de consulta: {exc.error}") from exc
         except Exception as exc:
-            raise RuntimeError(
-                "No ha sido posible conectar con Ollama. Verifica que el servicio esté activo."
-            ) from exc
+            raise RuntimeError(format_ollama_exception(exc)) from exc
 
         embeddings = response.get("embeddings")
         if not embeddings:
@@ -58,10 +81,15 @@ class NormativaRAG:
 
     def retrieve(self, question: str) -> RetrievalResult:
         collection = self._get_collection()
+        available_chunks = self._get_collection_size()
+        n_results = min(self.settings.top_k, available_chunks)
+        if n_results <= 0:
+            return RetrievalResult(context="", sources=[], chunks=[])
+
         query_embedding = self._embed_query(question)
         result = collection.query(
             query_embeddings=[query_embedding],
-            n_results=self.settings.top_k,
+            n_results=n_results,
             include=["documents", "metadatas"],
         )
 
@@ -92,14 +120,15 @@ class NormativaRAG:
         if not retrieval.context.strip():
             return NO_INFO_RESPONSE
 
+        normativa_skill = compose_skills("normativa", "evidencia", "citas")
+
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "Eres un subagente de normativa. Responde exclusivamente con la "
-                    "información presente en el contexto recuperado. No añadas conocimiento "
-                    "externo, no inventes obligaciones y no cites fuentes no incluidas. "
-                    "Si el contexto no basta para responder, devuelve exactamente: "
+                    f"{normativa_skill}\n\n"
+                    "Instrucción operativa obligatoria:\n"
+                    "Si el contexto no basta para responder, devuelve exactamente:\n"
                     f"{NO_INFO_RESPONSE}"
                 ),
             },
@@ -124,9 +153,7 @@ class NormativaRAG:
         except ResponseError as exc:
             raise RuntimeError(f"Error de Ollama al generar la respuesta: {exc.error}") from exc
         except Exception as exc:
-            raise RuntimeError(
-                "No ha sido posible conectar con Ollama. Verifica que el servicio esté activo."
-            ) from exc
+            raise RuntimeError(format_ollama_exception(exc)) from exc
 
         content = response["message"]["content"].strip()
         if not content:

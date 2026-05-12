@@ -8,6 +8,7 @@ from typing import Iterable, Iterator
 
 import chromadb
 from chromadb.api.models.Collection import Collection
+from chromadb.config import Settings as ChromaSettings
 from ollama import Client, ResponseError
 
 from .config import Settings, get_settings
@@ -207,7 +208,14 @@ def ingest_documents(settings: Settings) -> IngestSummary:
     previous_hashes, has_valid_state = load_ingest_state(settings)
 
     ollama_client = get_ollama_client(settings)
-    chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
+    chroma_client = chromadb.PersistentClient(
+        path=str(settings.chroma_path),
+        settings=ChromaSettings(
+            anonymized_telemetry=False,
+            chroma_product_telemetry_impl="src.chroma_telemetry.NullProductTelemetryClient",
+            chroma_telemetry_impl="src.chroma_telemetry.NullProductTelemetryClient",
+        ),
+    )
     collection = chroma_client.get_or_create_collection(name=settings.chroma_collection)
 
     full_rebuild = not has_valid_state
