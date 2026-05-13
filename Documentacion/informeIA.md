@@ -94,144 +94,61 @@ También es capaz de identificar normativa comunitaria, como reglamentos, direct
 
 En conjunto, este subagente no solo clasifica información legal, sino que la estructura de forma lógica y jerárquica, permitiendo que el sistema pueda comprender con precisión qué normativa es relevante, cómo se relaciona entre sí y en qué contexto debe aplicarse. Esto resulta fundamental para garantizar que el análisis jurídico final sea coherente, fundamentado y ajustado a la realidad normativa vigente.
 
----
 
 ## 3.2.1 Determinación de la competencia procesal y de los órganos judiciales competentes
 
 Además de identificar la normativa material aplicable, el subagente normativo incorpora un análisis de derecho procesal orientado a identificar el órgano judicial competente para conocer de cada asunto. Para ello, no se limita a determinar la rama material del derecho implicada, sino también vincula cada supuesto con la estructura orgánica del Poder Judicial, teniendo en cuenta la distribución de competencias entre jueces, tribunales y secciones especializadas.
 
-Este agente analiza la competencia desde una triple perspectiva:
+Este agente analiza la competencia desde una triple perspectiva, objetiva, para determinar qué órgano debe conocer del asunto según la materia o la gravedad del hecho; funcional, para distinguir qué órgano interviene en fase de instrucción, enjuiciamiento, recurso o ejecución; y territorial, para concretar la circunscripción judicial competente en función del lugar de comisión del hecho o del ámbito jurisdiccional correspondiente. De este modo, el sistema puede reconstruir no solo qué norma resulta aplicable, sino también cuál es el itinerario procesal adecuado dentro de la organización judicial. 
 
-- Objetiva, para determinar qué órgano debe conocer del asunto según la materia o la gravedad del hecho.
-- Funcional, para distinguir qué órgano interviene en fase de instrucción, enjuiciamiento, recurso o ejecución.
-- Territorial, para concretar la circunscripción judicial competente en función del lugar de comisión del hecho o del ámbito jurisdiccional correspondiente.
+A partir de esta lógica, el subagente puede identificar la intervención de los distintos órganos judiciales reconocidos en la estructura vigente, entre ellos los jueces y juezas de paz, los Tribunales de Instancia, las Audiencias Provinciales, los Tribunales Superiores de Justicia, el Tribunal Central de Instancia, la Audiencia Nacional y el Tribunal Supremo. Asimismo, puede distinguir cuándo un asunto corresponde a secciones ordinarias de instrucción o de lo penal y cuándo debe atribuirse a órganos especializados, como las secciones contencioso-administrativo.
 
-De este modo, el sistema puede reconstruir no solo qué norma resulta aplicable, sino también cuál es el itinerario procesal adecuado dentro de la organización judicial.
+En el ámbito penal, esta capacidad resulta especialmente relevante, ya que permite relacionar la competencia con criterios procesales concretos, como la pena prevista, la condición de aforado de la persona investigada, la existencia de competencias centralizadas de ámbito nacional o la presencia de materias especialmente atribuidas a órganos específicos. Así, el sistema puede diferencias, por ejemplo, entre asuntos cuya instrucción corresponde a secciones de instrucción de los Tribunales de Instancia, causas atribuidas al Tribunal Central de Instancia, procedimientos competencia de las Audiencias Provinciales o supuestos reservados al Tribunal Supremo o a los Tribunales Superiores de justicia. 
 
-A partir de esta lógica, el subagente puede identificar la intervención de los distintos órganos judiciales reconocidos en la estructura vigente, entre ellos:
-
-- Jueces y juezas de paz.
-- Tribunales de Instancia.
-- Audiencias Provinciales.
-- Tribunales Superiores de Justicia.
-- Tribunal Central de Instancia.
-- Audiencia Nacional.
-- Tribunal Supremo.
-
-Asimismo, puede distinguir cuándo un asunto corresponde a secciones ordinarias de instrucción o de lo penal y cuándo debe atribuirse a órganos especializados, como las secciones contencioso-administrativas.
-
-En el ámbito penal, esta capacidad resulta especialmente relevante, ya que permite relacionar la competencia con criterios procesales concretos, como:
-
-- La pena prevista.
-- La condición de aforado.
-- La existencia de competencias centralizadas.
-- La presencia de materias atribuidas a órganos específicos.
-
-Así, el sistema puede diferenciar, por ejemplo, entre asuntos cuya instrucción corresponde a secciones de instrucción de los Tribunales de Instancia, causas atribuidas al Tribunal Central de Instancia, procedimientos competencia de las Audiencias Provinciales o supuestos reservados al Tribunal Supremo o a los Tribunales Superiores de Justicia.
-
-Además, el subagente puede incorporar reglas especiales de atribución competencial derivadas de la normativa procesal, como las relativas a:
-
-- Delitos leves.
-- Aforamientos.
-- Recursos.
-- Decomiso autónomo.
-- Reconocimiento mutuo de resoluciones penales en la Unión Europea.
-
-Esta funcionalidad refuerza la precisión del sistema, porque no solo permite saber qué derecho sustantivo rige el caso, sino también ante qué órgano debe articularse la actuación judicial y qué recorrido procesal puede seguir posteriormente.
+Además, el subagente puede incorporar reglas especiales de atribución competencial derivadas de la normativa procesal, como las relativas a delitos leves, aforamientos, recursos, decomiso autónomo o reconocimiento mutuo de resoluciones penales en la Unión Europea. Esta funcionalidad refuerza la precisión del sistema, porque no solo permite saber qué derecho sustantivo rige el caso, sino también ante qué órgano debe articularse la actuación judicial y qué recorrido procesal puede seguir posteriormente. 
 
 ### Reglas de asignación
 
-#### Regla general penal
+1. Regla general penal
 
-Si el supuesto constituye un posible delito común no atribuido a órgano especial, la instrucción corresponde a la Sección de Instrucción del Tribunal de Instancia del lugar de comisión del hecho, y el enjuiciamiento dependerá de la pena prevista.
+Si el supuesto constituye un posible delito común no atribuido a órgano especial, la instrucción corresponde a la Sección de Instrucción del Tribunal de Instancia del lugar de comisión del hecho, y el enjuiciamiento dependerá de la pena prevista: si la pena de prisión supera los 5 años, o la pena de otra naturaleza no supera los 10 años, conocerá la Sección de lo Penal del Tribunal de Instancia; en los demás casos, será competente la Audiencia Provincial.
 
-Si la pena de prisión supera los 5 años, o la pena de otra naturaleza supera los 10 años, conocerá la Audiencia Provincial. En los demás casos será competente la Sección de lo Penal del Tribunal de Instancia.
+Este supuesto sirve para la mayoría de incidentes empresariales con dimensión penal ordinaria: acceso ilícito a sistemas, daños informáticos, descubrimiento y revelación de secretos, estafas informáticas, sabotaje interno, borrado de evidencias o exfiltración de datos siempre y cuando no entren en competencia centralizada.
 
-Este supuesto sirve para la mayoría de incidentes empresariales con dimensión penal ordinaria:
+2. Competencia centralizada
 
-- Acceso ilícito a sistemas.
-- Daños informáticos.
-- Descubrimiento y revelación de secretos.
-- Estafas informáticas.
-- Sabotaje interno.
-- Borrado de evidencias.
-- Exfiltración de datos.
+Si el caso se encuentra en el ámbito de la Audiencia Nacional , la instrucción corresponde a la Sección de Instrucción del Tribunal Central de Instancia y el enjuiciamiento se reparte según gravedad entre la Sección de lo Penal del Tribunal Central de Instancia y la Sala de lo Penal de la Audiencia Nacional.
 
-Siempre y cuando no entren en competencia centralizada.
-
-#### Competencia centralizada
-
-Si el caso se encuentra en el ámbito de la Audiencia Nacional, la instrucción corresponde a la Sección de Instrucción del Tribunal Central de Instancia y el enjuiciamiento se reparte según gravedad entre la Sección de lo Penal del Tribunal Central de Instancia y la Sala de lo Penal de la Audiencia Nacional.
-
-Esta vía centralizada aplica especialmente cuando el hecho afecte a delitos atribuidos a la Audiencia Nacional, tales como:
-
-- Terrorismo.
-- Delitos cometidos fuera del territorio nacional.
-- Criminalidad organizada de especial alcance.
-- Delitos atribuidos a la Fiscalía Europea.
-- Procedimientos de extradición y cooperación penal europea.
+Esta vía centralizada aplica especialmente cuando el hecho afecte a delitos atribuidos a la Audiencia Nacional, tales como terrorismo, delitos cometidos fuera del territorio nacional cuando deban ser enjuiciados en España, determinados supuestos vinculados a criminalidad organizada de especial alcance, delitos atribuidos a la Fiscalía Europea, o procedimientos de extracción y cooperación penal europea.
 
 ### Órgano según tipo de incidente
 
-#### Incidentes de empresa “ordinarios”
+3. Incidentes de empresa “ordinarios”
+Para un ransomware contra una pyme, una intrusión con robo de credenciales, un empleado que extrae bases de datos, un fraude BEC, una alteración de registros, o la destrucción de evidencias digitales, el criterio por defecto será la Sección de Instrucción del Tribunal de Instancia para investigar; después, Sección de lo Penal del Tribunal de Instancia si la pena encaja en el tramo de hasta 5 años de prisión o hasta 10 años en otras penas, y Audiencia Provincial si supera ese umbral. 
 
-Para un ransomware contra una pyme, una intrusión con robo de credenciales, un empleado que extrae bases de datos, un fraude BEC, una alteración de registros o la destrucción de evidencias digitales, el criterio por defecto será:
+Operativamente, el subagente puede etiquetar esto asuntos como “penal ordinario empresarial” salvo que detecte un elemento desplazador de competencia, como aforamiento, terrorismo, dimensión supraprovincial especialmente centralizada, hechos en el extranjero o atribución a la Fiscalía Europea.
 
-- Sección de Instrucción del Tribunal de Instancia para investigar.
-- Sección de lo Penal del Tribunal de Instancia si la pena encaja en el tramo correspondiente.
-- Audiencia Provincial si supera dicho umbral.
+4. Ciberincidentes
 
-Operativamente, el subagente puede etiquetar estos asuntos como “penal ordinario empresarial”, salvo que detecte un elemento desplazador de competencia.
+Si el incidente tecnológico incluye acoso digital, difusión íntima, sextorsión, amenazas, hostigamiento, control mediante spyware o vigilancia digital dentro de un contexto de violencia sobre la mujer, la competencia instructora corresponde a la Sección de Violencia sobre la Mujer; además, esta sección puede adoptar órdenes de protección y conocer también de delitos leves atribuidos por ley en ese ámbito.
 
-#### Ciberincidentes
+Si los hechos recaen sobre niños, niñas o adolescentes, como grooming, explotación, difusión de material íntimo, amenazas, control tecnológico o delitos violentos con componente digital contra menores, la instrucción corresponde a la Sección de Violencia sobre la Infancia y la Adolescencia, salvo que concurra también violencia sobre la mujer.
 
-Si el incidente tecnológico incluye:
+5. Ejecución penitenciaria
 
-- Acoso digital.
-- Difusión íntima.
-- Sextorsión.
-- Amenazas.
-- Hostigamiento.
-- Spyware.
-- Vigilancia digital.
-
-Dentro de un contexto de violencia sobre la mujer, la competencia instructora corresponde a la Sección de Violencia sobre la Mujer.
-
-Si los hechos recaen sobre menores, como:
-
-- Grooming.
-- Explotación.
-- Difusión de material íntimo.
-- Amenazas.
-- Control tecnológico.
-
-La instrucción corresponde a la Sección de Violencia sobre la Infancia y la Adolescencia.
-
-#### Ejecución penitenciaria
-
-Si el asunto consiste en controlar el cumplimiento de penas o derechos penitenciarios derivados de delitos informáticos, la competencia será de:
-
-- La Sección de Vigilancia Penitenciaria del Tribunal de Instancia.
-- O la Sección de Vigilancia Penitenciaria del Tribunal Central de Instancia si deriva de delitos competencia de la Audiencia Nacional.
+Si el asunto ya no consiste en investigar o enjuiciar el ciberincidente, sino en controlar el cumplimiento de pena, sanciones penitenciarias o derechos del penado condenado por delitos informáticos, la competencia es de la Sección de Vigilancia Penitenciaria del Tribunal de Instancia, o de la Sección de Vigilancia Penitenciaria del Tribunal Central de Instancia cuando la condena derive de delitos competencia de la Audiencia Nacional.
 
 ### Casos administrativos regulatorios
 
-#### Actos de autoridades estatales
+6. Actos de autoridades estatales
+   
+Si el conflicto gira en torno a actos, disposiciones o decisiones de autoridades, organismos u órganos con competencia en todo el territorio nacional, la vía ya no es penal ordinaria, sino contencioso-administrativa centralizada, y conocerá la Sección de lo Contencioso-Administrativo del Tribunal Central de Instancia en primera o única instancia.
+También se atribuyen a esa sección autorizaciones especialmente relevantes para el ámbito digital, como la cesión de datos por prestadores de servicios de la sociedad de la información, medidas de interrupción o retirada de contenidos, limitaciones de acceso previstas en la normativa europea de servicios digitales, y requerimientos de información impulsados por la Agencia Española de Protección de Datos u otras autoridades administrativas independientes estatales.
 
-Si el conflicto gira en torno a actos, disposiciones o decisiones de autoridades con competencia nacional, conocerá la Sección de lo Contencioso-Administrativo del Tribunal Central de Instancia.
+7. Casos administrativos no centralizados
 
-También se atribuyen a esta sección:
+Si el conflicto administrativo tecnológico afecta a actuaciones de administraciones no estatales de ámbito general nacional, la competencia deberá reconducirse a la Sección de lo Contencioso-Administrativo del Tribunal de Instancia cuando proceda según territorio y materia.
 
-- Cesión de datos.
-- Retirada de contenidos.
-- Limitaciones de acceso.
-- Requerimientos impulsados por la Agencia Española de Protección de Datos.
-
-#### Casos administrativos no centralizados
-
-Si el conflicto administrativo tecnológico afecta a actuaciones de administraciones no estatales, la competencia corresponderá a la Sección de lo Contencioso-Administrativo del Tribunal de Instancia.
-
----
 
 ## 3.3 Subagente de jurisprudencia
 
